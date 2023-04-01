@@ -1,0 +1,70 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Establecer la semilla
+np.random.seed(1712934957)
+
+# Ubicación de los candidatos
+cand1 = 90
+cand2 = 30
+cand3 = 10
+
+# Crear una estructura de datos para almacenar los votos por ronda
+votos_por_ronda = []
+
+# Número de rondas
+n_rondas = 10
+
+# Número de electores
+n_electores = 100
+
+# Simulación de Montecarlo
+for ronda in range(1, n_rondas + 1):
+    # Crear una estructura de datos para almacenar los votos por elector
+    votos_por_elector = {}
+    # Dibujar los electores
+    escala_seguridad = np.random.uniform(0, 100, n_electores)
+    for i, escala in enumerate(escala_seguridad):
+        candidatos_cercanos = []
+        # Encontrar los candidatos cercanos
+        if abs(escala - cand1) <= 10:
+            candidatos_cercanos.append('Candidato 1')
+        if abs(escala - cand2) <= 10:
+            candidatos_cercanos.append('Candidato 2')
+        if abs(escala - cand3) <= 10:
+            candidatos_cercanos.append('Candidato 3')
+        # Si el elector se cruza con varios candidatos, elegir uno al azar
+        if len(candidatos_cercanos) > 1:
+            voto = np.random.choice(candidatos_cercanos)
+        elif len(candidatos_cercanos) == 1:
+            voto = candidatos_cercanos[0]
+        else:
+            voto = 'Candidato nulo'
+        # Guardar el voto en el diccionario
+        votos_por_elector[i+1] = voto
+    # Agregar los votos por ronda a la estructura de datos
+    votos_por_ronda.append(votos_por_elector)
+
+# Crear un DataFrame para almacenar los resultados por ronda
+df_resultados = pd.DataFrame()
+
+# Procesar los votos por ronda
+for ronda, votos_por_elector in enumerate(votos_por_ronda):
+    # Obtener el conteo de votos por candidato
+    votos_por_candidato = pd.Series(list(votos_por_elector.values())).value_counts()
+    # Guardar los resultados de la ronda en el DataFrame
+    df_resultados[f'Ronda {ronda+1}'] = votos_por_candidato
+
+    # Generar y guardar el gráfico como imagen PNG
+    fig, ax = plt.subplots()
+    votos_por_candidato.plot(kind='bar', ax=ax)
+    ax.set_xlabel('Candidatos')
+    ax.set_ylabel('Número de Votos')
+    ax.set_title(f'Resultados de la Ronda {ronda+1}')
+    plt.savefig(f'resultados_ronda_{ronda+1}.png')
+
+# Imprimir los resultados de la elección por ronda
+print('Resultados de la elección por ronda:')
+df_resultados
+
